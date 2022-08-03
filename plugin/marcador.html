@@ -1,0 +1,285 @@
+<html>
+<head>
+<style type="text/css">
+
+body { 
+    background-color: rgba(0, 0, 0, 0); 
+    margin: 0px auto; 
+    overflow: hidden; 
+}
+
+.marcador_global {
+    display: flex;  
+    flex-wrap: wrap;
+    border: 2px solid purple;
+    border-radius: 0px 0px 0px 0px;
+    width: 543px;
+    background-color: rgba(0, 0, 0, 10); 
+}
+
+.marcador {
+    background-color: rgba(10, 0, 0, 10);  
+    color: blue;
+    height: 64px;
+    font-size: 40px;
+    display: flex;
+    align-content: center;
+    justify-content: center;
+    background: linear-gradient(to bottom, red 50%, black 0%);
+
+    
+}
+
+.marcador_element {
+    display: inline-flex;
+    padding: 5px;
+    background-color: rgba(0, 0, 0, 10); 
+}
+.marcador_goal_local {
+    display: inline-flex;
+    padding-top: 5px;
+    padding-left: 15px;
+    padding-bottom: 24px;
+    background-color: rgba(0, 0, 0, 10); 
+    font-family: 'Courier New';
+    font-size: 54px;
+    color: floralwhite;
+    
+}
+.marcador_goal_visitor {
+    display: inline-flex;
+    padding-top: 5px;
+    padding-right: 15px;
+    padding-bottom: 24px;
+    background-color: rgba(0, 0, 0, 10); 
+    font-family: 'Courier New';
+    font-size: 54px;
+    color: floralwhite;
+    border-radius: 32;
+}
+.marcador_chronometer {
+    display: inline-flex;
+    padding-top: 15px;
+    padding-bottom: 0px;
+    padding-left: 0px;
+    background-color: rgba(255, 0, 0, 10); 
+    border-bottom-left-radius: 32px;
+    border-bottom-right-radius: 32px;
+}
+.marcador_chronometer_text {
+    display: inline-flex;
+    padding-left: 15px;
+    padding-right: 15px;
+    color: whitesmoke;
+    font-family: 'Lucida Console';
+    font-size: 24px;
+}
+
+.marcador_extension {
+    height: 64px;
+    line-height: 64px;
+    color:  red;
+    display: flex;
+    text-align: center;
+    align-content: center;
+    justify-content: center;
+    vertical-align: middle;
+    font-family: 'Lucida Console';
+    font-size: 20px;
+}
+
+.controles {
+    opacity: 1.0;
+    transition: all 100ms ease-out;
+}
+.espacio_local {
+    background-color: black;
+    width: 45;
+    border-top-right-radius: 32px;
+}
+.espacio_visitor {
+    background-color: black;
+    width: 45;
+    border-top-left-radius: 32px;
+}
+.espacio {
+    width: 32;
+    background-color: black;
+}
+
+.controles:hover {
+    opacity: 1.0;
+    transition: all 100ms ease-in;
+}
+.imagen:hover {
+    opacity: 1.0;
+    transition: all 100ms ease-in;
+}
+
+</style>
+</head>
+<body>
+    <div class="marcador_global">
+        <div class="marcador">
+            <div class="espacio" width="32"></div>
+            <img class="marcador_element" src="escudo_local.png" height="48"></img>
+            <div class="marcador_goal_local" id="marcador_local" width="50"></div>
+            <div class="espacio_local" width="32"></div>
+            <div class="marcador_chronometer"  width="100">
+                 <div class="marcador_chronometer_text" id="marcador_cronometro"></div>
+            </div>
+            <div class="espacio_visitor" width="32"></div>
+             <div class="marcador_goal_visitor" id="marcador_visitante" width="50"></div>
+            <img class="marcador_element" src="escudo_visitante.png" height="48">
+            <div class="espacio" width="32"></div>
+            </img>
+        </div>
+        <div class="marcador_extension" id=marcador_descuento></div>
+    </div>
+    <br>
+    <div class="controles">
+        <button id="inc_local">Incrementar goles local</button>
+        <button id="inc_visitante">Incrementar goles visitante</button><br>
+
+        <button id="dec_local">Decrementar goles local</button>
+        <button id="dec_visitante">Decrementar goles visitante</button><br>
+
+        <button id="inicio_partido">Iniciar partido</button>
+        <button id="inicio_parte_2">Iniciar segunda parte</button>
+        <button id="stop_time">Detener crono</button>
+        <button id="cont_time">Continuar crono</button><br>
+
+        <input id="newtime" type="text" placeholder="mm:ss"/>
+        <button id="set_time">SET</button><br>
+    </div>
+</body>
+<script type="text/javascript">
+
+//------ Gestion de marcador
+
+    var goles_locales = 0;
+    var goles_visitante = 0;
+
+    var minuto_partido = 0;
+    var segundo_partido = 0;
+    var minuto_descuento = 0;
+    var segundo = 0;
+
+    var partido_parado = true;
+    var es_primera_parte = true;
+
+    const marcador_local = document.getElementById("marcador_local");
+    const marcador_visitante = document.getElementById("marcador_visitante");
+    const marcador_cronometro = document.getElementById("marcador_cronometro");
+    const marcador_desc = document.getElementById("marcador_descuento");
+
+    var actualizar_marcador = function() {
+        let es_descuento = ((es_primera_parte && minuto_partido >= 45) || 
+            minuto_partido >= 90);
+
+        marcador_local.innerHTML = goles_locales;
+        marcador_cronometro.innerHTML =
+            (minuto_partido).toString().padStart(2,'0') + ":" +
+            (es_descuento?'00':(segundo_partido).toString().padStart(2,'0'));
+        marcador_visitante.innerHTML = goles_visitante;
+
+        if (es_descuento) {
+            marcador_desc.innerHTML = "+ " +
+                (minuto_descuento).toString().padStart(2,'0') + ":" +
+                (segundo_partido).toString().padStart(2,'0');
+        } else {
+            marcador_desc.innerHTML = '';
+        }
+        
+    }
+
+    document.getElementById("inc_local").onclick = function(){
+        goles_locales = goles_locales + 1;
+        actualizar_marcador();
+    }
+
+    document.getElementById("inc_visitante").onclick = function(){
+        goles_visitante = goles_visitante + 1;
+        actualizar_marcador();
+    }
+        
+    document.getElementById("dec_local").onclick = function(){
+        goles_locales = goles_locales - 1;
+        actualizar_marcador();
+    }
+
+    document.getElementById("dec_visitante").onclick = function(){
+        goles_visitante = goles_visitante - 1;
+        actualizar_marcador();
+    }
+
+    document.getElementById("inicio_partido").onclick = function(){
+        es_primera_parte = true;
+        partido_parado = false;
+        segundo = 0;
+        actualizar_marcador();
+    }
+
+    document.getElementById("inicio_parte_2").onclick = function(){
+        es_primera_parte = false;
+        partido_parado = false;
+        segundo = 45*60;
+        actualizar_marcador();
+    }
+
+    document.getElementById("stop_time").onclick = function(){
+        partido_parado = true;
+        actualizar_marcador();
+    }
+
+    document.getElementById("cont_time").onclick = function(){
+        partido_parado = false;
+        actualizar_marcador();
+    }
+    
+//------ Gestion del tiempo
+
+    var actualizar_tiempos = function() {
+
+        if ( partido_parado ) {
+            return;
+        }
+
+        segundo = segundo + 1;
+        segundo_partido = segundo % 60;
+        minuto_partido = Math.floor(segundo / 60);
+
+        if ( es_primera_parte && minuto_partido >= 45 ) {
+            
+            minuto_descuento = minuto_partido - 45;
+            minuto_partido = 45;
+
+        } else if ( minuto_partido >= 90 ) {
+
+            minuto_descuento = minuto_partido - 90;
+            minuto_partido = 90;
+
+        }
+
+        actualizar_marcador();
+    }
+
+    document.getElementById("set_time").onclick = function(){
+        const newtime = document.getElementById("newtime").value;
+        const valores = newtime.split(":");
+
+        let input_minute = parseInt(valores[0]);
+        let input_second = parseInt(valores[1]);
+
+        es_primera_parte = input_minute < 45;
+        segundo = input_minute * 60 + input_second;
+
+        actualizar_tiempos();
+        actualizar_marcador();
+    }
+
+    setInterval(actualizar_tiempos, 1000);
+    actualizar_marcador();
+
+</script>
+</html> 
