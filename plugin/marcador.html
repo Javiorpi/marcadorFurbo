@@ -235,17 +235,19 @@
 
     var minuto_partido = 0;
     var segundo_partido = 0;
+    var timestamp_inicio = new Date().getTime();
     var minuto_descuento = 0;
-    var segundo = 0;
     var tiempo_total = 45;
 
     var partido_parado = true;
+    var cuando_se_paro_el_partido = new Date().getTime();
     var es_primera_parte = true;
 
     const marcador_goles = document.getElementById("marcador_goles");
 
     const marcador_cronometro = document.getElementById("marcador_cronometro");
-    const contenedor_cronometro = document.getElementById('marcador_zonaTiempo')
+    const contenedor_cronometro = document.getElementById('marcador_zonaTiempo');
+
 
 //------ Gestion de textos
 
@@ -292,24 +294,26 @@
     document.getElementById("inicio_partido").onclick = function(){
         es_primera_parte = true;
         partido_parado = false;
-        segundo = 0;
+        timestamp_inicio = new Date().getTime();
         actualizar_marcador();
     }
 
     document.getElementById("inicio_parte_2").onclick = function() {
         es_primera_parte = false;
         partido_parado = false;
-        segundo = tiempo_total*60;
+        timestamp_inicio = new Date().getTime() - tiempo_total*60*1000;
         actualizar_marcador();
     }
 
     document.getElementById("stop_time").onclick = function() {
         partido_parado = true;
+        cuando_se_paro_el_partido = new Date().getTime();
         actualizar_marcador();
     }
 
     document.getElementById("cont_time").onclick = function() {
         partido_parado = false;
+        timestamp_inicio = timestamp_inicio + (new Date().getTime()-cuando_se_paro_el_partido);
         actualizar_marcador();
     }
     
@@ -321,11 +325,9 @@
             return;
         }
 
-        segundo = segundo + 1;
+        let segundo = Math.trunc((new Date().getTime()/1000)-(timestamp_inicio/1000))
         segundo_partido = segundo % 60;
         minuto_partido = Math.floor(segundo / 60);
-
-       
 
         actualizar_marcador();
     }
@@ -338,7 +340,7 @@
         let input_second = parseInt(valores[1]);
 
         es_primera_parte = input_minute < tiempo_total;
-        segundo = input_minute * 60 + input_second;
+        timestamp_inicio = new Date().getTime() - (input_minute * 60 + input_second) * 1000;
 
         actualizar_tiempos();
         actualizar_marcador();
@@ -385,4 +387,4 @@
     }
 
 </script>
-</html> 
+</html>
